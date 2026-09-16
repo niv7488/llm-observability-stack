@@ -16,8 +16,22 @@ sleep 5
 echo "Pulling Ollama model..."
 docker exec weather-ollama ollama pull llama3
 
-echo "Importing Credentials and Workflows into n8n..."
-docker exec weather-n8n n8n import:credentials --input=/data/workflows/../credentials.json || true
-docker exec weather-n8n n8n import:workflow --separate --input=/data/workflows
+echo "Importing Credentials into n8n..."
+docker exec weather-n8n n8n import:credentials --input=/data/n8n/credentials.json || true
 
-echo "Stack is fully initialized and active!"
+echo "Importing Workflows into n8n..."
+docker exec weather-n8n n8n import:workflow --separate --input=/data/n8n/workflows
+
+echo ""
+echo "=================================================="
+echo "      🚀 Stack is fully active & ready! 🚀       "
+echo "=================================================="
+echo " 🌐 Agent UI (Streamlit): http://localhost:8501"
+echo " ⚡ n8n Workflows:        http://localhost:5678"
+echo " 📊 Grafana Dashboards:   http://localhost:3000  (user: admin / pass: admin)"
+echo " 📈 Prometheus Metrics:  http://localhost:9090"
+echo " 🦙 Ollama API:          http://localhost:11434"
+echo " 🐰 RabbitMQ Management: http://localhost:15672 (user: guest / pass: guest)"
+echo " 🐘 Postgres Database:   localhost:5432          (db: weather_db / user: user)"
+echo "=================================================="
+echo ""

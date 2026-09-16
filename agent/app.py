@@ -12,9 +12,14 @@ city = st.selectbox("Select Target City", ["London", "New York", "Tokyo", "Paris
 user_query = st.text_input("Ask about weather, sports activities, or tourism itinerary:", 
                            "what is the weather right now and what good football games there are in this week?")
 
-if st.button("Query Agent"):
+button_clicked = st.button("Query Agent")
+status_container = st.empty()
+
+if button_clicked:
     start_time = time.time()
     REQUESTS_TOTAL.inc()
+    
+    status_container.info("⏳ Agent is thinking and querying Ollama LLM... Please wait.")
     
     try:
         ollama_host = os.getenv("OLLAMA_HOST", "http://ollama:11434")
@@ -23,7 +28,7 @@ if st.button("Query Agent"):
         response = requests.post(
             f"{ollama_host}/api/generate",
             json={"model": "llama3", "prompt": prompt, "stream": False},
-            timeout=60
+            timeout=180
         )
         
         latency = time.time() - start_time
@@ -31,12 +36,13 @@ if st.button("Query Agent"):
         
         if response.status_code == 200:
             result = response.json().get("response", "No answer received.")
+            status_container.empty()
             st.subheader("Agent Answer:")
             st.write(result)
         else:
             ERRORS_TOTAL.inc()
-            st.error(f"Error from LLM: {response.status_code}")
+            status_container.error(f"Error from LLM: {response.status_code}")
             
     except Exception as e:
         ERRORS_TOTAL.inc()
-        st.error(f"Failed to process query: {e}")
+        status_container.error(f"Failed to process query: {e}")

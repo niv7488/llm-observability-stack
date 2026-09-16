@@ -1,16 +1,16 @@
-#!/usr/bin/env bash
-set -e
+#!/bin/bash
+echo "🚀 Starting Full Weather LLM Observability Stack..."
 
-echo "🚀 Starting LLM Observability Stack..."
+# Build and start services
+docker compose up -d --build
 
-# Build and bring up containers in detached mode
-docker compose up --build -d
+echo "⏳ Waiting for Ollama to pull llama3 model..."
+docker exec -it weather-ollama ollama pull llama3
 
-echo ""
-echo "✅ Stack successfully started!"
+echo "✅ All Services Are Running!"
 echo "--------------------------------------------------"
-echo "🌐 LLM Agent API:      http://localhost:8000"
-echo "📊 Metrics Endpoint:   http://localhost:8000/metrics"
-echo "🔥 Prometheus UI:      http://localhost:9090"
-echo "📈 Grafana Dashboard:  http://localhost:3000 (User: admin / Pass: admin)"
+echo "🤖 Agent UI:     http://localhost:8501"
+echo "🔄 n8n UI:        http://localhost:5678"
+echo "📊 Grafana:       http://localhost:3000 (admin/admin)"
+echo "🔥 Prometheus:    http://localhost:9090"
 echo "--------------------------------------------------"

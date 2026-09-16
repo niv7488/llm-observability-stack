@@ -4,7 +4,7 @@ import requests
 import streamlit as st
 from prometheus_client import start_http_server, Counter, Histogram
 
-# Start Prometheus metrics server on port 8000
+# Initialize Prometheus Metrics Server on Port 8000
 @st.cache_resource
 def init_prometheus():
     try:
@@ -14,7 +14,7 @@ def init_prometheus():
 
 init_prometheus()
 
-# Define Metrics
+# Metric definitions
 REQUESTS_TOTAL = Counter('http_requests_total', 'Total HTTP Requests')
 ERRORS_TOTAL = Counter('http_request_errors_total', 'Total HTTP Errors')
 LLM_LATENCY = Histogram('llm_latency_seconds', 'LLM response latency in seconds')

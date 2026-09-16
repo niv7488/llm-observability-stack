@@ -2,19 +2,22 @@ import os
 import time
 import requests
 import streamlit as st
-import psycopg2
 from prometheus_client import start_http_server, Counter, Histogram
 
-# Initialize Prometheus Metrics (runs once on port 8000)
+# Start Prometheus metrics server on port 8000
 @st.cache_resource
 def init_prometheus():
-    start_http_server(8000)
+    try:
+        start_http_server(8000)
+    except Exception:
+        pass
 
 init_prometheus()
 
-REQUEST_COUNT = Counter('http_requests_total', 'Total HTTP Requests', ['method', 'status'])
-REQUEST_ERROR_COUNT = Counter('http_request_errors_total', 'Total HTTP 5xx Errors')
-LLM_LATENCY = Histogram('llm_latency_seconds', 'Latency of LLM requests in seconds')
+# Define Metrics
+REQUESTS_TOTAL = Counter('http_requests_total', 'Total HTTP Requests')
+ERRORS_TOTAL = Counter('http_request_errors_total', 'Total HTTP Errors')
+LLM_LATENCY = Histogram('llm_latency_seconds', 'LLM response latency in seconds')
 
 st.set_page_config(page_title="Autonomous Weather Agent", page_icon="☀️", layout="centered")
 
@@ -26,7 +29,7 @@ user_query = st.text_input("Ask about weather, sports activities, or tourism iti
 
 if st.button("Query Agent"):
     start_time = time.time()
-    REQUEST_COUNT.labels(method="POST", status="200").inc()
+    REQUESTS_TOTAL.inc()
     
     try:
         ollama_host = os.getenv("OLLAMA_HOST", "http://ollama:11434")
@@ -46,9 +49,9 @@ if st.button("Query Agent"):
             st.subheader("Agent Answer:")
             st.write(result)
         else:
-            REQUEST_ERROR_COUNT.inc()
+            ERRORS_TOTAL.inc()
             st.error(f"Error from LLM: {response.status_code}")
             
     except Exception as e:
-        REQUEST_ERROR_COUNT.inc()
+        ERRORS_TOTAL.inc()
         st.error(f"Failed to process query: {e}")

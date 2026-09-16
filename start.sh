@@ -3,6 +3,7 @@ set -e
 
 echo "Starting stack..."
 docker compose down -v
+docker compose build agent-ui
 docker compose up -d
 
 echo "Waiting for services..."

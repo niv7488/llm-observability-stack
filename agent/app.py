@@ -2,10 +2,14 @@ import os
 import streamlit as st
 import psycopg2
 import requests
-from prometheus_client import Counter, start_http_server
+from prometheus_client import Counter, start_http_server, REGISTRY
 
-# Prometheus Metrics Exporter
-REQUEST_COUNTER = Counter('agent_queries_total', 'Total AI Agent queries answered')
+# Define Prometheus Metric safely to prevent re-registration crash in Streamlit
+try:
+    REQUEST_COUNTER = Counter('agent_queries_total', 'Total AI Agent queries answered')
+except ValueError:
+    # If already registered on Streamlit rerun, retrieve existing metric from registry
+    REQUEST_COUNTER = REGISTRY._names_to_collectors['agent_queries_total']
 
 DB_HOST = os.getenv('DB_HOST', 'localhost')
 DB_NAME = os.getenv('DB_NAME', 'weather_db')
@@ -13,6 +17,7 @@ DB_USER = os.getenv('DB_USER', 'user')
 DB_PASS = os.getenv('DB_PASS', 'password')
 OLLAMA_HOST = os.getenv('OLLAMA_HOST', 'http://localhost:11434')
 
+# Start metrics server safely
 try:
     start_http_server(8000)
 except Exception:

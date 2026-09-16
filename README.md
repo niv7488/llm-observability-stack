@@ -1,6 +1,6 @@
 # 🚀 LLM Observability & Monitoring Stack
 
-A production-ready reference architecture for monitoring LLM Microservices and Infrastructure using Prometheus, Grafana, and FastAPI.
+A reference architecture for monitoring LLM Microservices and Infrastructure using Prometheus, Grafana, and FastAPI.
 
 ---
 

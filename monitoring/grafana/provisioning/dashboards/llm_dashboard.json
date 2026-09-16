@@ -17,7 +17,7 @@
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
       "targets": [
         {
-          "expr": "sum(http_requests_total) || vector(0)",
+          "expr": "sum(http_requests_total) or vector(0)",
           "legendFormat": "Requests",
           "refId": "A"
         }
@@ -39,7 +39,7 @@
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
       "targets": [
         {
-          "expr": "sum(http_request_errors_total) || vector(0)",
+          "expr": "sum(http_request_errors_total) or vector(0)",
           "legendFormat": "Errors",
           "refId": "A"
         }

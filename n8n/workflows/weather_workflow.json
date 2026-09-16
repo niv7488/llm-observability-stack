@@ -36,7 +36,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO weather_recommendations (city, temperature, condition, llm_recommendation) VALUES ('Tel Aviv', 26, 'Sunny', '{{ $json.response.replace(/'/g, \"''\") }}');"
+        "query": "INSERT INTO weather_recommendations (city, temperature, condition, llm_recommendation) VALUES ('London', 15, 'Cloudy', '{{ $json.response.replace(/'/g, \"''\") }}');"
       },
       "id": "3",
       "name": "Store in Postgres",
@@ -45,7 +45,7 @@
       "position": [750, 300],
       "credentials": {
         "postgres": {
-          "id": "1",
+          "id": "postgres-creds",
           "name": "Postgres account"
         }
       }

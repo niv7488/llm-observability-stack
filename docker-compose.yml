@@ -12,7 +12,6 @@ volumes:
   grafana_data:
 
 services:
-  # 1. Database for Weather & Activity Logs
   postgres:
     image: postgres:15-alpine
     container_name: weather-postgres
@@ -33,7 +32,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # 2. Message Queue for Reliable Ingestion
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: weather-rabbitmq
@@ -45,7 +43,6 @@ services:
     networks:
       - weather-net
 
-  # 3. Local LLM Service
   ollama:
     image: ollama/ollama:latest
     container_name: weather-ollama
@@ -56,7 +53,6 @@ services:
     networks:
       - weather-net
 
-  # 4. Workflow Automation (Zero-Touch Setup)
   n8n:
     image: docker.n8n.io/n8nio/n8n:latest
     container_name: weather-n8n
@@ -65,8 +61,8 @@ services:
     environment:
       - N8N_PORT=5678
       - N8N_PROTOCOL=http
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
       - N8N_USER_MANAGEMENT_DISABLED=true
-      - N8N_DIAGNOSTICS_ENABLED=false
     volumes:
       - n8n_data:/home/node/.n8n
     networks:
@@ -76,7 +72,6 @@ services:
       - rabbitmq
       - ollama
 
-  # 5. AI Agent & Streamlit UI (RAG System)
   agent-ui:
     build:
       context: ./agent
@@ -97,7 +92,6 @@ services:
       postgres:
         condition: service_healthy
 
-  # 6. Observability - Prometheus
   prometheus:
     image: prom/prometheus:latest
     container_name: weather-prometheus
@@ -108,7 +102,6 @@ services:
     networks:
       - weather-net
 
-  # 7. Observability - Grafana
   grafana:
     image: grafana/grafana:latest
     container_name: weather-grafana

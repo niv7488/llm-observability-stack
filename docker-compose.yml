@@ -1,48 +1,121 @@
 version: '3.8'
 
+networks:
+  weather-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
+  n8n_data:
+  ollama_data:
+  grafana_data:
+
 services:
-  # App / LLM Agent Service
+  # 1. Database for Weather & Activity Logs
+  postgres:
+    image: postgres:15-alpine
+    container_name: weather-postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: weather_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - weather-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d weather_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. Message Queue for Reliable Ingestion
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: weather-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - weather-net
+
+  # 3. Local LLM Service
+  ollama:
+    image: ollama/ollama:latest
+    container_name: weather-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - weather-net
+
+  # 4. Workflow Automation (Ingestion Pipeline)
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    container_name: weather-n8n
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+    volumes:
+      - n8n_data:/home/node/.n8n
+    networks:
+      - weather-net
+    depends_on:
+      - postgres
+      - rabbitmq
+      - ollama
+
+  # 5. AI Agent & Streamlit UI (RAG System)
   agent-ui:
     build:
-      context: ./app
+      context: ./agent
       dockerfile: Dockerfile
-    container_name: agent-ui
+    container_name: weather-agent-ui
     ports:
+      - "8501:8501"
       - "8000:8000"
-    restart: unless-stopped
+    environment:
+      - DB_HOST=postgres
+      - DB_NAME=weather_db
+      - DB_USER=user
+      - DB_PASS=password
+      - OLLAMA_HOST=http://ollama:11434
     networks:
-      - monitoring-net
+      - weather-net
+    depends_on:
+      postgres:
+        condition: service_healthy
 
-  # Prometheus Collector
+  # 6. Observability - Prometheus
   prometheus:
-    image: prom/prometheus:v2.51.0
-    container_name: prometheus
-    restart: unless-stopped
-    volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    image: prom/prometheus:latest
+    container_name: weather-prometheus
     ports:
       - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
     networks:
-      - monitoring-net
+      - weather-net
 
-  # Grafana Visualization UI
+  # 7. Observability - Grafana
   grafana:
-    image: grafana/grafana:10.4.0
-    container_name: grafana
-    restart: unless-stopped
+    image: grafana/grafana:latest
+    container_name: weather-grafana
     ports:
       - "3000:3000"
-    environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-      - GF_USERS_ALLOW_SIGN_UP=false
     volumes:
-      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - weather-net
     depends_on:
       - prometheus
-    networks:
-      - monitoring-net
-
-networks:
-  monitoring-net:
-    driver: bridge

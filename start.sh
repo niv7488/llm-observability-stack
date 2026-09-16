@@ -1,16 +1,22 @@
 #!/bin/bash
-echo "🚀 Initializing Stack..."
+set -e
 
-# Launch containers
-docker compose up -d --build
+echo "Starting Docker stack..."
+docker compose down -v
+docker compose up -d
 
-echo "⏳ Pulling llama3 model into Ollama container..."
-docker exec -i weather-ollama ollama pull llama3
+echo "Waiting for services to initialize..."
+until [ "$(docker inspect -f '{{.State.Running}}' weather-ollama 2>/dev/null)" == "true" ] && \
+      [ "$(docker inspect -f '{{.State.Running}}' weather-n8n 2>/dev/null)" == "true" ]; do
+    sleep 2
+done
 
-echo "✅ Deployment Complete!"
-echo "--------------------------------------------------"
-echo "🤖 Agent Interface:  http://localhost:8501"
-echo "🔄 n8n Engine:       http://localhost:5678"
-echo "📊 Grafana:          http://localhost:3000 (admin/admin)"
-echo "🔥 Prometheus:       http://localhost:9090"
-echo "--------------------------------------------------"
+sleep 5
+
+echo "Pulling llama3 model into Ollama container..."
+docker exec weather-ollama ollama pull llama3
+
+echo "Importing Workflows into n8n..."
+docker exec weather-n8n n8n import:workflow --separate --input=/data/workflows
+
+echo "Done! All services, models, and workflows are completely provisioned."

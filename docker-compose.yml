@@ -56,7 +56,7 @@ services:
     networks:
       - weather-net
 
-  # 4. Workflow Automation (Ingestion Pipeline)
+  # 4. Workflow Automation (Zero-Touch Setup)
   n8n:
     image: docker.n8n.io/n8nio/n8n:latest
     container_name: weather-n8n
@@ -65,6 +65,8 @@ services:
     environment:
       - N8N_PORT=5678
       - N8N_PROTOCOL=http
+      - N8N_USER_MANAGEMENT_DISABLED=true
+      - N8N_DIAGNOSTICS_ENABLED=false
     volumes:
       - n8n_data:/home/node/.n8n
     networks:

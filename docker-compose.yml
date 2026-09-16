@@ -62,11 +62,13 @@ services:
       - N8N_PORT=5678
       - N8N_PROTOCOL=http
       - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
-      - N8N_USER_MANAGEMENT_DISABLED=true
     volumes:
       - n8n_data:/home/node/.n8n
+      - ./n8n/workflows:/data/workflows
     networks:
       - weather-net
+    # מייבא אוטומטית את קובצי ה-JSON של ה-Workflows מתיקיית workflows ומפעיל את n8n
+    command: /bin/sh -c "n8n import:workflow --separate --input=/data/workflows && n8n start"
     depends_on:
       - postgres
       - rabbitmq
@@ -107,6 +109,9 @@ services:
     container_name: weather-grafana
     ports:
       - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
     volumes:
       - grafana_data:/var/lib/grafana
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning

@@ -2,22 +2,7 @@ import os
 import time
 import requests
 import streamlit as st
-from prometheus_client import start_http_server, Counter, Histogram
-
-# Initialize Prometheus Metrics Server on Port 8000
-@st.cache_resource
-def init_prometheus():
-    try:
-        start_http_server(8000)
-    except Exception:
-        pass
-
-init_prometheus()
-
-# Metric definitions
-REQUESTS_TOTAL = Counter('http_requests_total', 'Total HTTP Requests')
-ERRORS_TOTAL = Counter('http_request_errors_total', 'Total HTTP Errors')
-LLM_LATENCY = Histogram('llm_latency_seconds', 'LLM response latency in seconds')
+from metrics import REQUESTS_TOTAL, ERRORS_TOTAL, LLM_LATENCY
 
 st.set_page_config(page_title="Autonomous Weather Agent", page_icon="☀️", layout="centered")
 

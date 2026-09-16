@@ -1,9 +1,12 @@
-🚀 LLM Observability & Monitoring Stack
+# 🚀 LLM Observability & Monitoring Stack
 
 A production-ready reference architecture for monitoring LLM Microservices and Infrastructure using Prometheus, Grafana, and FastAPI.
 
-📐 Architecture Overview
+---
 
+## 📐 Architecture Overview
+
+```text
   +------------------------------------------------------------------------+
   |                         🐳 Docker Network                              |
   |                                                                        |
@@ -11,27 +14,19 @@ A production-ready reference architecture for monitoring LLM Microservices and I
   |   |    agent-ui    |  <------------>  |   Prometheus   |               |
   |   |   (FastAPI)    |    (/metrics)    |  (Collector)   |               |
   |   +----------------+                  +-------+--------+               |
-  |           ^                                   |                        |
-  |           |                                   | PromQL                 |
-  |           | Traffic                           v                        |
-  |           |                           +----------------+               |
+  |           ^                                   | PromQL                 |
+  |           |                                   v                        |
+  |           | Traffic                   +----------------+               |
   |           |                           |    Grafana     |               |
   |           |                           |  (Dashboard)   |               |
   |           |                           +-------+--------+               |
-  +-----------|-----------------------------------|------------------------+
+  +-----------+-----------------------------------+------------------------+
               |                                   |
-              | http://localhost:8000             | http://localhost:3000
+              |                                   | http://localhost:3000
        +------+-------+                  +--------+--------+
        | 👤 End User  |                  | 👨‍💻 Engineer    |
        +--------------+                  +-----------------+
 
-Data Flow
-
-Application Traffic: End-users interact with the agent-ui FastAPI service.
-
-Metric Scraping: Prometheus periodically queries the /metrics endpoint exposed by the FastAPI service every 5 seconds.
-
-Visualization: Grafana queries metric time-series data from Prometheus via PromQL and displays metrics on pre-configured dashboards.
 
 🌐 Access Services & Endpoints
 Service             | Protocol / Port | Endpoint URL                  | Credentials   | Description
@@ -52,12 +47,12 @@ Visualization Platform (Grafana): Pre-configured with automated data sources and
 Prerequisites
 Docker & Docker Compose installed.
 
-1. Start the Stack
+Start the Stack
 Run the automated startup script:
 
+Bash
 chmod +x start.sh stop.sh
 ./start.sh
-
 📊 Pre-built Grafana Metrics
 The stack comes out-of-the-box with a pre-provisioned Grafana dashboard tracking:
 
@@ -70,5 +65,6 @@ LLM Latency (p95): 95th percentile latency calculation for model responses.
 🛑 Tear Down
 To stop all services and clean up network resources and volumes:
 
+Bash
 ./stop.sh
 

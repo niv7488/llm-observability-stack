@@ -53,19 +53,6 @@ services:
     networks:
       - weather-net
 
-  # Init container שרץ פעם אחת, מביא את ה-Workflows מה-Git לתוך ה-Volume, ומסיים
-  n8n-import:
-    image: docker.n8n.io/n8nio/n8n:latest
-    container_name: weather-n8n-import
-    volumes:
-      - n8n_data:/home/node/.n8n
-      - ./n8n/workflows:/data/workflows
-    entrypoint: /bin/sh
-    command: -c "n8n import:workflow --separate --input=/data/workflows"
-    networks:
-      - weather-net
-
-  # השרת הראשי של n8n שממתין לסיום ה-Import
   n8n:
     image: docker.n8n.io/n8nio/n8n:latest
     container_name: weather-n8n
@@ -77,11 +64,10 @@ services:
       - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
     volumes:
       - n8n_data:/home/node/.n8n
+      - ./n8n:/data/n8n
     networks:
       - weather-net
     depends_on:
-      n8n-import:
-        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       rabbitmq:

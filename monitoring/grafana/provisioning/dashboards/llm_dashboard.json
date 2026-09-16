@@ -5,7 +5,7 @@
   "graphTooltip": 0,
   "id": null,
   "title": "LLM & System Observability Dashboard",
-  "tags": ["observability", "llm"],
+  "tags": ["observability"],
   "timezone": "browser",
   "schemaVersion": 38,
   "version": 1,
@@ -17,8 +17,8 @@
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
       "targets": [
         {
-          "expr": "sum(http_requests_total) || vector(0)",
-          "legendFormat": "Total Requests",
+          "expr": "http_requests_total || vector(0)",
+          "legendFormat": "Requests",
           "refId": "A"
         }
       ],
@@ -39,7 +39,7 @@
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
       "targets": [
         {
-          "expr": "sum(http_request_errors_total) || vector(0)",
+          "expr": "http_request_errors_total || vector(0)",
           "legendFormat": "Errors",
           "refId": "A"
         }
@@ -65,7 +65,7 @@
       "targets": [
         {
           "expr": "histogram_quantile(0.95, sum(rate(llm_latency_seconds_bucket[5m])) by (le))",
-          "legendFormat": "p95 Latency (s)",
+          "legendFormat": "p95 Latency",
           "refId": "A"
         }
       ]

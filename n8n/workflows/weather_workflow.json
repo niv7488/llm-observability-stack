@@ -45,7 +45,6 @@
       "position": [750, 300],
       "credentials": {
         "postgres": {
-          "id": "postgres-creds",
           "name": "Postgres account"
         }
       }

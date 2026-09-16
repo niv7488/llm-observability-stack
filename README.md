@@ -86,5 +86,31 @@ Monitor Metrics: Open http://localhost:3000 (Grafana) to view real-time request 
 🛑 Tear Down
 To stop all services and remove volumes:
 
+
+## ❓ FAQ & Troubleshooting
+
+**Q: Why am I getting a `DuplicateTimeseries` error in Streamlit?**  
+**A:** Streamlit re-runs its entire script from top to bottom on every user interaction. If Prometheus metrics are instantiated directly inside the main `app.py`, they are re-registered on every click, causing a conflict.  
+*Fix:* We separated the metric definitions into a standalone module (`metrics.py`). This ensures the Prometheus client registers the metrics into memory only once during the initial import.
+
+**Q: Why do my Grafana Stat Panels display "No Data"?**  
+**A:** This typically happens when Prometheus hasn't recorded any data for a metric yet (e.g., zero requests have been made since startup).  
+*Fix:* Initialize your counters at startup using `.inc(0)` in your Python code. Additionally, use the `or vector(0)` fallback in your Grafana PromQL queries (e.g., `sum(http_requests_total) or vector(0)`) to gracefully display `0` instead of "No data".
+
+**Q: The LLM agent times out and throws a `ReadTimeout` error. How do I fix it?**  
+**A:** Local LLMs (like Ollama running `llama3`) can take a moment to load into memory during a "Cold Start", often exceeding default HTTP request timeouts.  
+*Fix:* Increase the `timeout` parameter in your `requests.post()` call (e.g., `timeout=180`). It is also recommended to use a visual loading state (like `st.status` or `st.spinner`) to provide clear feedback to the user while the model generates the response.
+
+---
+
+## 🚀 Future Improvements (Production Readiness)
+
+Taking this stack from a local Docker Compose environment to a production-grade deployment requires a few architectural upgrades. If you plan to deploy this in a real-world scenario, consider the following enhancements:
+
+*   **Kubernetes (K8s) Orchestration:** Migrate from Docker Compose to Helm Charts or native K8s manifests. Utilize the `Prometheus Operator` and `ServiceMonitor` resources for dynamic metric scraping. For optimal inference speed, ensure the Ollama workloads are scheduled on GPU-enabled nodes.
+*   **Persistent Storage:** Attach Persistent Volumes (PV/PVCs) to Prometheus and Grafana. This ensures that historical metric data and custom dashboard configurations survive pod/container restarts.
+*   **Secrets & Configuration Management:** Decouple hardcoded environment variables. Use Kubernetes Secrets, HashiCorp Vault, or a robust external Secrets Manager to safely store and inject sensitive data.
+*   **Security & Authentication:** Implement TLS/SSL to encrypt internal communication between microservices. Secure the Grafana dashboard and Streamlit UI from unauthorized access using an authentication proxy (like OAuth2 Proxy) or Ingress-level authentication.
+
 Bash
 ./stop.sh
